@@ -1,0 +1,284 @@
+:root {
+  color-scheme: light;
+  font-family: "Segoe UI", Arial, sans-serif;
+  font-size: 14px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  width: 384px;
+  margin: 0;
+  color: #242424;
+  background: #fff;
+}
+
+.panel {
+  padding: 16px;
+}
+
+h1 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-image {
+  display: block;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.cat-fallback {
+  display: none;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #8a8a8a;
+  border-radius: 50%;
+}
+
+.icon-button {
+  width: 34px;
+  min-height: 34px;
+  padding: 7px;
+}
+
+.domain-status {
+  display: flex;
+  gap: 9px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+  padding: 10px;
+  border-radius: 4px;
+  background: #f3f6fa;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  margin-top: 5px;
+  border-radius: 50%;
+  background: #8a8a8a;
+}
+
+.domain-status.active .status-dot {
+  background: #147d64;
+}
+
+.page-name {
+  overflow: hidden;
+  margin: 0;
+  color: #242424;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.domain-status-copy {
+  margin: 2px 0 0;
+  color: #5f5f5f;
+  font-size: 12px;
+}
+
+.library-control {
+  margin-bottom: 14px;
+}
+
+.picker {
+  position: relative;
+}
+
+.picker-button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  text-align: left;
+}
+
+.picker-menu {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+}
+
+.picker-row {
+  display: flex;
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.picker-row:last-child {
+  border-bottom: 0;
+}
+
+.picker-option,
+.picker-delete {
+  min-height: 40px;
+  border: 0;
+  border-radius: 0;
+  background: #fff;
+}
+
+.picker-option {
+  flex: 1;
+  text-align: left;
+}
+
+.picker-option:hover,
+.picker-delete:hover {
+  background: #f3f3f3;
+}
+
+.picker-delete {
+  width: 40px;
+  flex: 0 0 40px;
+  color: #b10e1e;
+  font-size: 20px;
+}
+
+.editor-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.editor-header label,
+.library-control label {
+  margin: 0;
+  font-weight: 600;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+textarea {
+  display: block;
+  width: 100%;
+  min-height: 190px;
+  padding: 10px;
+  resize: vertical;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  color: #242424;
+  font: 13px/1.5 Consolas, "Courier New", monospace;
+}
+
+textarea:focus {
+  border-color: #005fb8;
+  outline: 2px solid #005fb8;
+  outline-offset: 1px;
+}
+
+.buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.file-controls {
+  display: flex;
+  gap: 6px;
+}
+
+.file-controls button {
+  flex: 1;
+}
+
+button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid #8a8a8a;
+  border-radius: 4px;
+  color: #242424;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #f3f3f3;
+}
+
+button:focus-visible {
+  outline: 2px solid #005fb8;
+  outline-offset: 2px;
+}
+
+button.primary {
+  border-color: #005fb8;
+  color: #fff;
+  background: #005fb8;
+}
+
+button.primary:hover {
+  background: #004a91;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+#remove-button {
+  background: #b10e1e;
+  color: #f3f3f3;
+}
+
+input[type="checkbox"] {
+  margin: 0;
+  accent-color: #005fb8;
+}
+
+.status {
+  min-height: 20px;
+  margin: 12px 0 0;
+  color: #5f5f5f;
+  line-height: 1.4;
+}
+
+.status.error {
+  color: #b10e1e;
+}
+#support-footer {
+  text-align: center;
+  padding: 20px;
+}
+
+#support-footer a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}

@@ -1,0 +1,33 @@
+{
+  "manifest_version": 3,
+  "name": "Purrfect CSS",
+  "version": "1.1.0",
+  "description": "Making websites purr-fectly yours. Tuxedo cat approved. Developed by Byron Mena",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "storage",
+    "tabs"
+  ],
+  "host_permissions": [
+    "http://*/*",
+    "https://*/*"
+  ],
+  "action": {
+    "default_title": "Purrfect CSS",
+    "default_popup": "popup.html"
+  },
+  "options_page": "dashboard.html",
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "icons": {
+    "16": "images/tuxedo_cat_16.png",
+    "48": "images/tuxedo_cat_48.png",
+    "128": "images/tuxedo_cat_128.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'self';"
+  }
+}
