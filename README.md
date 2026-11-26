@@ -1,4 +1,36 @@
-# Purrfect CSS 1.1.0
+# Purrfect CSS 1.2.2
+
+## Design Inspector
+
+Purrfect CSS now includes a local-first website design inspector in its side panel.
+
+- Overview metrics for DOM size, colors, typography, assets, and accessibility findings
+- Click-to-inspect mode with dimensions, spacing, computed typography, colors, borders, and shadows
+- WCAG AA/AAA contrast grading for normal and large text
+- Color and typography aggregation
+- Image and CSS background asset discovery
+- Asset preview cards with list and tile layouts
+- Font previews grouped by element, class, and ID selectors
+- Inline color swatches and copy actions in element inspection
+- Green/red contrast badges with separate AA/AAA results for normal and large text
+- Automated image, label, heading-order, document-language, and contrast findings
+- JSON snapshot export
+- Palette clipboard export
+- Asset download requests
+- The latest ten design snapshots stored locally
+
+### Version 1.2.1
+
+- Falls back to opening the inspector in a tab when the browser side-panel API is unavailable.
+- Adds contrast status colors, inline color swatches, and copy controls.
+- Adds icon navigation, font preview cards, and list/tile asset layouts.
+
+### Version 1.2.2
+
+- Adds palette/category color views and extracts linear gradients for visual preview.
+- Uses icon-only color copy actions with accessible hover/focus tooltips and contrast-aware foregrounds.
+- Displays box-shadow layers as a readable list and clarifies the inspector's no-selection state.
+- Adds popup shortcuts for the inspector, dashboard, and close action; wraps long page titles.
 
 Purrfect CSS is a Microsoft Edge / Chromium Manifest V3 extension for writing, uploading, saving, and managing custom CSS.
 
@@ -31,7 +63,7 @@ Keep `manifest.json` at the top level of the folder you load into Edge.
 ## Security baseline introduced in v1.0.1
 
 - Introduced `activeTab`, `scripting`, and `storage` access for popup-based CSS editing.
-- Adds an explicit Manifest V3 extension-page CSP that permits only locally packaged scripts and objects.
+- Adds a Manifest V3 extension-page CSP that permits only locally packaged scripts and explicitly permits website asset thumbnails.
 - Restricts `chrome.storage.local` to trusted extension contexts.
 - Validates CSS before saving it for application or injecting it.
 - Blocks `@import`, `url()`, `image-set()`, and `-webkit-image-set()` constructs to reduce CSS-driven external resource requests.
@@ -114,7 +146,7 @@ Before sharing or publishing, test the following in current Microsoft Edge:
 9. Verify `edge://extensions` and other restricted browser pages are not injectable.
 10. Reload a website and confirm the domain rule remains applied.
 11. Inspect the popup console for unexpected errors.
-12. Confirm no network requests originate from Purrfect CSS itself during ordinary editing. The CSS restrictions are intended to prevent CSS resource URLs from being applied.
+12. Confirm asset thumbnails load only when the Assets view is opened. They are requested directly from the asset URLs on the inspected page; no analytics or snapshot upload is performed.
 
 ## Troubleshooting
 
@@ -127,6 +159,8 @@ Before sharing or publishing, test the following in current Microsoft Edge:
 ## Privacy summary
 
 Purrfect CSS saves the editor draft, stylesheet library, and domain rules in `chrome.storage.local`. It does not include an analytics service, remote API, or account system. The CSS itself is applied locally to matching domains. Browser storage is not encrypted secret storage.
+
+Design inspection snapshots are also stored locally. Website asset thumbnails are loaded from their original URLs when the Assets view is opened. The extension does not send snapshots or page text to a remote service.
 
 ## Release notes
 

@@ -393,10 +393,39 @@ async function syncAllTabs() {
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  if (!message || typeof message.type !== "string") return false;
+  if (
+    sender.id !== chrome.runtime.id ||
+    !message ||
+    typeof message.type !== "string"
+  ) return false;
 
   (async () => {
     switch (message.type) {
+      case "INSPECTOR_ENSURE_CONTENT":
+        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
+        await chrome.scripting.executeScript({
+          target: { tabId: message.tabId, allFrames: false },
+          files: ["content.js"]
+        });
+        sendResponse({ ready: true });
+        break;
+      case "INSPECTOR_COMMAND":
+        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
+        sendResponse(await chrome.tabs.sendMessage(message.tabId, message.payload));
+        break;
+      case "INSPECTOR_GET_SELECTION":
+        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
+        sendResponse(await chrome.tabs.sendMessage(message.tabId, {
+          type: "INSPECTOR_GET_SELECTION"
+        }));
+        break;
+      case "INSPECTOR_SCAN":
+        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
+        sendResponse(await chrome.tabs.sendMessage(message.tabId, {
+          type: "INSPECTOR_SCAN",
+          payload: message.payload || {}
+        }));
+        break;
       case "APPLY_STYLESHEET":
         sendResponse(await applyStylesheet(
           message.hostname,

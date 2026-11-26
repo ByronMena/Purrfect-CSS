@@ -8,7 +8,9 @@ const pageName = document.querySelector("#page-name");
 const domainStatus = document.querySelector("#domain-status");
 const domainStatusBox = document.querySelector(".domain-status");
 const statusMessage = document.querySelector("#status");
+const sidepanelButton = document.querySelector("#sidepanel-button");
 const dashboardButton = document.querySelector("#dashboard-button");
+const closeButton = document.querySelector("#close-button");
 const pickerButton = document.querySelector("#stylesheet-picker-button");
 const pickerName = document.querySelector("#stylesheet-picker-name");
 const pickerMenu = document.querySelector("#stylesheet-picker-menu");
@@ -473,9 +475,35 @@ document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") closePicker();
 });
 
-dashboardButton.addEventListener("click", () => {
-  chrome.runtime.openOptionsPage();
+sidepanelButton.addEventListener("click", async () => {
+  const sidePanelApi = chrome.sidePanel;
+  const openSidePanel = sidePanelApi?.open;
+  const inspectorUrl = (tabId) => chrome.runtime.getURL(
+    `sidepanel.html${isValidTabId(tabId) ? `?tabId=${tabId}` : ""}`
+  );
+  try {
+    if (typeof openSidePanel === "function" && isValidTabId(activeTab?.id)) {
+      await openSidePanel.call(sidePanelApi, { tabId: activeTab.id });
+      return;
+    }
+    await chrome.tabs.create({ url: inspectorUrl(activeTab?.id) });
+  } catch (error) {
+    console.warn("[Purrfect CSS] Could not open the side panel; opening the inspector tab.", error);
+    try {
+      await chrome.tabs.create({ url: inspectorUrl(activeTab?.id) });
+    } catch (fallbackError) {
+      reportError("Could not open the design inspector.", fallbackError);
+    }
+  }
 });
+
+dashboardButton.addEventListener("click", () => {
+  chrome.runtime.openOptionsPage().catch((error) => {
+    reportError("Could not open the dashboard.", error);
+  });
+});
+
+closeButton.addEventListener("click", () => window.close());
 
 const catImage = document.querySelector(".cat-image");
 catImage?.addEventListener("error", () => {

@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Purrfect CSS Inspector</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <aside class="shell">
+      <header class="header">
+        <div class="brand">
+          <img src="images/tuxedo_cat_48.png" alt="" />
+          <div>
+            <strong>Purrfect CSS</strong>
+            <span id="page-origin">Design Inspector</span>
+          </div>
+        </div>
+        <button id="close-button" type="button" aria-label="Close side panel">
+          ×
+        </button>
+      </header>
+
+      <nav class="tabs" aria-label="Inspector modules">
+        <button
+          class="tab active"
+          type="button"
+          data-view="overview"
+          aria-current="page"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect width="7" height="18" x="3" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="3" rx="1" />
+            <rect width="7" height="7" x="14" y="14" rx="1" />
+          </svg>
+          <span>Overview</span>
+        </button>
+        <button class="tab" type="button" data-view="inspector">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="M12.034 12.681a.498.498 0 0 1 .647-.647l9 3.5a.5.5 0 0 1-.033.943l-3.444 1.068a1 1 0 0 0-.66.66l-1.067 3.443a.5.5 0 0 1-.943.033z"
+            />
+            <path
+              d="M21 11V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6"
+            />
+          </svg>
+          <span>Inspect</span>
+        </button>
+        <button class="tab" type="button" data-view="colors">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m11 10 3 3" />
+            <path
+              d="M6.5 21A3.5 3.5 0 1 0 3 17.5a2.62 2.62 0 0 1-.708 1.792A1 1 0 0 0 3 21z"
+            />
+            <path
+              d="M9.969 17.031 21.378 5.624a1 1 0 0 0-3.002-3.002L6.967 14.031"
+            />
+          </svg>
+          <span>Colors</span>
+        </button>
+        <button class="tab" type="button" data-view="typography">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m2 16 4.039-9.69a.5.5 0 0 1 .923 0L11 16" />
+            <path d="M22 9v7" />
+            <path d="M3.304 13h6.392" />
+            <circle cx="18.5" cy="12.5" r="3.5" />
+          </svg>
+          <span>Type</span>
+        </button>
+        <button class="tab" type="button" data-view="assets">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect width="18" height="18" x="3" y="3" rx="2" />
+            <circle cx="9" cy="9" r="2" />
+            <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+          </svg>
+          <span>Assets</span>
+        </button>
+        <button class="tab" type="button" data-view="a11y">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="lucide lucide-circle-person-arms-spread preview-icon"
+          >
+            <path d="m15 17-3-3" />
+            <path d="M8 10s2 1 4 1 4-1 4-1" />
+            <path d="m9 17 3-3v-3" />
+            <circle cx="12" cy="12" r="10" />
+            <circle cx="12" cy="7" r=".5" fill="currentColor" />
+          </svg>
+          <span>A11y</span>
+        </button>
+      </nav>
+
+      <main>
+        <section id="overview-view" class="view">
+          <div class="view-heading">
+            <div>
+              <h1>Overview</h1>
+              <p id="scan-status">No scan captured.</p>
+            </div>
+            <button id="scan-button" class="primary" type="button">
+              Scan page
+            </button>
+          </div>
+          <div id="overview-metrics" class="metrics"></div>
+          <section class="result-section">
+            <h2>Recent findings</h2>
+            <div id="recent-findings"></div>
+          </section>
+        </section>
+
+        <section id="inspector-view" class="view" hidden>
+          <div class="view-heading">
+            <div>
+              <h1>Inspector</h1>
+              <p>Click an element on the page.</p>
+            </div>
+            <button
+              id="inspector-button"
+              class="inspector-toggle"
+              type="button"
+            >
+              Enable inspector
+            </button>
+          </div>
+          <div id="selected-empty" class="empty">
+            No element selected. Enable Inspector, then click an element on the
+            page.
+          </div>
+          <div id="selected-details" hidden></div>
+        </section>
+
+        <section id="colors-view" class="view" hidden>
+          <div class="view-heading">
+            <h1>Colors</h1>
+            <button
+              id="copy-palette-button"
+              class="copy-icon-button"
+              type="button"
+              data-copy-label="Copy palette"
+              aria-label="Copy palette"
+            >
+              <svg
+                class="button-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <rect width="14" height="14" x="8" y="8" rx="2" ry="2" />
+                <path
+                  d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
+                />
+              </svg>
+              <span class="button-tooltip" aria-hidden="true"
+                >Copy palette</span
+              >
+            </button>
+          </div>
+          <div class="color-toolbar">
+            <div
+              class="color-view-switch"
+              role="group"
+              aria-label="Color display"
+            >
+              <button
+                class="color-view-button active"
+                type="button"
+                data-color-view="palette"
+                aria-pressed="true"
+              >
+                Palette
+              </button>
+              <button
+                class="color-view-button"
+                type="button"
+                data-color-view="categories"
+                aria-pressed="false"
+              >
+                Categories
+              </button>
+            </div>
+          </div>
+          <div id="color-results" class="color-list"></div>
+        </section>
+
+        <section id="typography-view" class="view" hidden>
+          <div class="view-heading"><h1>Typography</h1></div>
+          <div id="typography-results"></div>
+        </section>
+
+        <section id="assets-view" class="view" hidden>
+          <div class="view-heading">
+            <div class="assets-title">
+              <h1>Assets</h1>
+              <div
+                id="asset-badges"
+                class="asset-badges"
+                aria-label="Asset counts"
+              ></div>
+            </div>
+            <button id="download-assets-button" type="button">
+              Download assets
+            </button>
+          </div>
+          <div class="asset-toolbar" role="group" aria-label="Asset display">
+            <button
+              class="asset-view-button active"
+              type="button"
+              data-layout="tiles"
+              aria-pressed="true"
+              aria-label="Show assets as tiles"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-layout-grid preview-icon"
+              >
+                <rect width="7" height="7" x="3" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="3" rx="1" />
+                <rect width="7" height="7" x="14" y="14" rx="1" />
+                <rect width="7" height="7" x="3" y="14" rx="1" />
+              </svg>
+              <span class="button-tooltip" aria-hidden="true">Tiles view</span>
+            </button>
+            <button
+              class="asset-view-button"
+              type="button"
+              data-layout="list"
+              aria-pressed="false"
+              aria-label="Show assets as a list"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="lucide lucide-table-properties preview-icon"
+              >
+                <path d="M15 3v18" />
+                <rect width="18" height="18" x="3" y="3" rx="2" />
+                <path d="M21 9H3" />
+                <path d="M21 15H3" />
+              </svg>
+              <span class="button-tooltip" aria-hidden="true">List view</span>
+            </button>
+          </div>
+          <div id="asset-results"></div>
+        </section>
+
+        <section id="a11y-view" class="view" hidden>
+          <div class="view-heading"><h1>Accessibility</h1></div>
+          <p class="disclaimer">
+            Automated first-pass findings; manual review is still required.
+          </p>
+          <div id="a11y-results"></div>
+        </section>
+      </main>
+
+      <footer class="footer">
+        <button id="export-button" type="button">Export JSON</button>
+        <button id="dashboard-button" type="button">Open dashboard</button>
+      </footer>
+    </aside>
+    <script src="sidepanel.js"></script>
+  </body>
+</html>
