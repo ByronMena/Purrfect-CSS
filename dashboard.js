@@ -22,14 +22,17 @@ function setStatus(message, isError = false) {
 }
 
 function uniqueId(prefix) {
-  if (typeof crypto?.randomUUID === "function") return `${prefix}-${crypto.randomUUID()}`;
+  if (typeof crypto?.randomUUID === "function")
+    return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function assertCss(css) {
   if (!css.trim()) throw new Error("Enter some CSS before saving.");
-  if (new Blob([css]).size > MAX_CSS_BYTES) throw new Error("CSS must be 256 KB or smaller.");
-  if (typeof CSSStyleSheet !== "function") throw new Error("CSS validation is unavailable.");
+  if (new Blob([css]).size > MAX_CSS_BYTES)
+    throw new Error("CSS must be 256 KB or smaller.");
+  if (typeof CSSStyleSheet !== "function")
+    throw new Error("CSS validation is unavailable.");
   const sheet = new CSSStyleSheet();
   try {
     sheet.replaceSync(css);
@@ -53,11 +56,17 @@ function assertCss(css) {
 }
 
 async function load() {
-  const data = await chrome.storage.local.get([STYLESHEETS_KEY, DOMAIN_RULES_KEY]);
-  stylesheets = Array.isArray(data[STYLESHEETS_KEY]) ? data[STYLESHEETS_KEY] : [];
-  domainRules = data[DOMAIN_RULES_KEY] && typeof data[DOMAIN_RULES_KEY] === "object"
-    ? data[DOMAIN_RULES_KEY]
-    : {};
+  const data = await chrome.storage.local.get([
+    STYLESHEETS_KEY,
+    DOMAIN_RULES_KEY,
+  ]);
+  stylesheets = Array.isArray(data[STYLESHEETS_KEY])
+    ? data[STYLESHEETS_KEY]
+    : [];
+  domainRules =
+    data[DOMAIN_RULES_KEY] && typeof data[DOMAIN_RULES_KEY] === "object"
+      ? data[DOMAIN_RULES_KEY]
+      : {};
   renderList();
   renderDomains();
   if (stylesheets.length) selectStylesheet(stylesheets[0].id);
@@ -132,7 +141,9 @@ function renderAppliedDomains() {
     remove.textContent = "Remove";
     remove.addEventListener("click", async () => {
       await chrome.runtime.sendMessage({ type: "REMOVE_DOMAIN_CSS", hostname });
-      domainRules = (await chrome.storage.local.get(DOMAIN_RULES_KEY))[DOMAIN_RULES_KEY] || {};
+      domainRules =
+        (await chrome.storage.local.get(DOMAIN_RULES_KEY))[DOMAIN_RULES_KEY] ||
+        {};
       renderAppliedDomains();
       renderDomains();
       renderList();
@@ -151,7 +162,10 @@ async function saveSelected() {
     stylesheet.name = nameInput.value.trim() || stylesheet.name;
     stylesheet.css = css;
     stylesheet.updatedAt = new Date().toISOString();
-    await chrome.storage.local.set({ [STYLESHEETS_KEY]: stylesheets, [DRAFT_KEY]: css });
+    await chrome.storage.local.set({
+      [STYLESHEETS_KEY]: stylesheets,
+      [DRAFT_KEY]: css,
+    });
 
     const affectedDomains = stylesheetDomains(selectedId);
     for (const hostname of affectedDomains) {
@@ -159,7 +173,7 @@ async function saveSelected() {
         type: "APPLY_STYLESHEET",
         hostname,
         stylesheetId: selectedId,
-        previousCss: oldCss
+        previousCss: oldCss,
       });
     }
     setStatus("Changes saved and applied.");
@@ -172,8 +186,16 @@ async function saveSelected() {
 async function deleteSelected() {
   const stylesheet = stylesheets.find((item) => item.id === selectedId);
   if (!stylesheet) return;
-  if (!window.confirm(`Delete "${stylesheet.name}" and remove it from every applied domain?`)) return;
-  await chrome.runtime.sendMessage({ type: "DELETE_STYLESHEET", stylesheetId: selectedId });
+  if (
+    !window.confirm(
+      `Delete "${stylesheet.name}" and remove it from every applied domain?`,
+    )
+  )
+    return;
+  await chrome.runtime.sendMessage({
+    type: "DELETE_STYLESHEET",
+    stylesheetId: selectedId,
+  });
   stylesheets = stylesheets.filter((item) => item.id !== selectedId);
   const data = await chrome.storage.local.get(DOMAIN_RULES_KEY);
   domainRules = data[DOMAIN_RULES_KEY] || {};
@@ -205,15 +227,17 @@ async function uploadFile(file) {
       source: "uploaded",
       css,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     stylesheets.push(stylesheet);
     await chrome.storage.local.set({
       [STYLESHEETS_KEY]: stylesheets,
-      [DRAFT_KEY]: css
+      [DRAFT_KEY]: css,
     });
     selectStylesheet(stylesheet.id);
-    setStatus("Uploaded CSS saved. It is ready to apply from a supported domain.");
+    setStatus(
+      "Uploaded CSS saved. It is ready to apply from a supported domain.",
+    );
   } catch (error) {
     setStatus(error.message, true);
   }
@@ -221,13 +245,18 @@ async function uploadFile(file) {
 
 function renderDomains() {
   const container = document.querySelector("#domain-list");
-  const query = document.querySelector("#domain-search").value.trim().toLowerCase();
+  const query = document
+    .querySelector("#domain-search")
+    .value.trim()
+    .toLowerCase();
   container.replaceChildren();
   Object.entries(domainRules)
     .filter(([hostname]) => hostname.toLowerCase().includes(query))
     .sort(([a], [b]) => a.localeCompare(b))
     .forEach(([hostname, rule]) => {
-      const stylesheet = stylesheets.find((item) => item.id === rule.stylesheetId);
+      const stylesheet = stylesheets.find(
+        (item) => item.id === rule.stylesheetId,
+      );
       const row = document.createElement("div");
       row.className = "domain-row";
       row.setAttribute("role", "row");
@@ -241,8 +270,14 @@ function renderDomains() {
       remove.type = "button";
       remove.textContent = "Remove";
       remove.addEventListener("click", async () => {
-        await chrome.runtime.sendMessage({ type: "REMOVE_DOMAIN_CSS", hostname });
-        domainRules = (await chrome.storage.local.get(DOMAIN_RULES_KEY))[DOMAIN_RULES_KEY] || {};
+        await chrome.runtime.sendMessage({
+          type: "REMOVE_DOMAIN_CSS",
+          hostname,
+        });
+        domainRules =
+          (await chrome.storage.local.get(DOMAIN_RULES_KEY))[
+            DOMAIN_RULES_KEY
+          ] || {};
         renderDomains();
         renderAppliedDomains();
         renderList();
@@ -267,29 +302,37 @@ document.querySelectorAll(".nav-item").forEach((button) => {
     });
     button.classList.add("active");
     button.setAttribute("aria-current", "page");
-    document.querySelectorAll(".view").forEach((view) => { view.hidden = true; });
+    document.querySelectorAll(".view").forEach((view) => {
+      view.hidden = true;
+    });
     document.querySelector(`#${button.dataset.view}-view`).hidden = false;
   });
 });
 
 search.addEventListener("input", renderList);
-document.querySelector("#domain-search").addEventListener("input", renderDomains);
+document
+  .querySelector("#domain-search")
+  .addEventListener("input", renderDomains);
 document.querySelector("#save-button").addEventListener("click", saveSelected);
-document.querySelector("#delete-button").addEventListener("click", deleteSelected);
-document.querySelector("#duplicate-button").addEventListener("click", async () => {
-  const source = stylesheets.find((item) => item.id === selectedId);
-  if (!source) return;
-  const copy = {
-    ...source,
-    id: uniqueId("copied"),
-    name: `${source.name} Copy`,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
-  };
-  stylesheets.push(copy);
-  await chrome.storage.local.set({ [STYLESHEETS_KEY]: stylesheets });
-  selectStylesheet(copy.id);
-});
+document
+  .querySelector("#delete-button")
+  .addEventListener("click", deleteSelected);
+document
+  .querySelector("#duplicate-button")
+  .addEventListener("click", async () => {
+    const source = stylesheets.find((item) => item.id === selectedId);
+    if (!source) return;
+    const copy = {
+      ...source,
+      id: uniqueId("copied"),
+      name: `${source.name} Copy`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    };
+    stylesheets.push(copy);
+    await chrome.storage.local.set({ [STYLESHEETS_KEY]: stylesheets });
+    selectStylesheet(copy.id);
+  });
 
 function exportStylesheet(stylesheet) {
   const blob = new Blob([stylesheet.css], { type: "text/css;charset=utf-8" });
@@ -306,17 +349,26 @@ document.querySelector("#export-button").addEventListener("click", () => {
   if (stylesheet) exportStylesheet(stylesheet);
 });
 
-document.querySelector("#upload-dashboard-button").addEventListener("click", () => {
-  document.querySelector("#dashboard-file-input").click();
-});
-document.querySelector("#dashboard-file-input").addEventListener("change", (event) => {
-  uploadFile(event.target.files?.[0]).finally(() => { event.target.value = ""; });
-});
+document
+  .querySelector("#upload-dashboard-button")
+  .addEventListener("click", () => {
+    document.querySelector("#dashboard-file-input").click();
+  });
+document
+  .querySelector("#dashboard-file-input")
+  .addEventListener("change", (event) => {
+    uploadFile(event.target.files?.[0]).finally(() => {
+      event.target.value = "";
+    });
+  });
 
 document.querySelector("#export-all-button").addEventListener("click", () => {
-  const blob = new Blob([JSON.stringify({ stylesheets, domainRules }, null, 2)], {
-    type: "application/json"
-  });
+  const blob = new Blob(
+    [JSON.stringify({ stylesheets, domainRules }, null, 2)],
+    {
+      type: "application/json",
+    },
+  );
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -326,7 +378,12 @@ document.querySelector("#export-all-button").addEventListener("click", () => {
 });
 
 document.querySelector("#clear-button").addEventListener("click", async () => {
-  if (!window.confirm("Clear every stylesheet and domain rule? This cannot be undone.")) return;
+  if (
+    !window.confirm(
+      "Clear every stylesheet and domain rule? This cannot be undone.",
+    )
+  )
+    return;
   for (const [hostname] of Object.entries(domainRules)) {
     await chrome.runtime.sendMessage({ type: "REMOVE_DOMAIN_CSS", hostname });
   }
@@ -343,8 +400,10 @@ document.querySelector("#clear-button").addEventListener("click", async () => {
 
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area !== "local") return;
-  if (changes[STYLESHEETS_KEY]) stylesheets = changes[STYLESHEETS_KEY].newValue || [];
-  if (changes[DOMAIN_RULES_KEY]) domainRules = changes[DOMAIN_RULES_KEY].newValue || {};
+  if (changes[STYLESHEETS_KEY])
+    stylesheets = changes[STYLESHEETS_KEY].newValue || [];
+  if (changes[DOMAIN_RULES_KEY])
+    domainRules = changes[DOMAIN_RULES_KEY].newValue || {};
   renderList();
   renderDomains();
   if (selectedId) {

@@ -5,13 +5,18 @@ let colorView = "palette";
 
 async function activeTab() {
   const requestedTabValue = new URLSearchParams(location.search).get("tabId");
-  const requestedTabId = requestedTabValue !== null && /^\d+$/.test(requestedTabValue)
-    ? Number(requestedTabValue)
-    : null;
-  const requestedTab = Number.isInteger(requestedTabId) && requestedTabId >= 0
-    ? await chrome.tabs.get(requestedTabId).catch(() => null)
-    : null;
-  const [currentTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  const requestedTabId =
+    requestedTabValue !== null && /^\d+$/.test(requestedTabValue)
+      ? Number(requestedTabValue)
+      : null;
+  const requestedTab =
+    Number.isInteger(requestedTabId) && requestedTabId >= 0
+      ? await chrome.tabs.get(requestedTabId).catch(() => null)
+      : null;
+  const [currentTab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true,
+  });
   const tab = requestedTab || currentTab;
   state.tabId = tab?.id ?? null;
   const origin = tab?.url ? new URL(tab.url).hostname : "Unsupported page";
@@ -57,7 +62,10 @@ function copyIcon() {
   rect.setAttribute("rx", "2");
   rect.setAttribute("ry", "2");
   const path = document.createElementNS(svg.namespaceURI, "path");
-  path.setAttribute("d", "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2");
+  path.setAttribute(
+    "d",
+    "M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2",
+  );
   svg.append(rect, path);
   return svg;
 }
@@ -73,7 +81,10 @@ function downloadIcon() {
   svg.setAttribute("aria-hidden", "true");
   svg.classList.add("button-icon");
   const path = document.createElementNS(svg.namespaceURI, "path");
-  path.setAttribute("d", "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m4-5 5 5 5-5m-5 5V3");
+  path.setAttribute(
+    "d",
+    "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4m4-5 5 5 5-5m-5 5V3",
+  );
   svg.append(path);
   return svg;
 }
@@ -93,16 +104,14 @@ function contrastIcon(passes) {
     "lucide",
     passes ? "lucide-circle-check" : "lucide-circle-x",
     "preview-icon",
-    "contrast-icon"
+    "contrast-icon",
   );
   const circle = document.createElementNS(svg.namespaceURI, "circle");
   circle.setAttribute("cx", "12");
   circle.setAttribute("cy", "12");
   circle.setAttribute("r", "10");
   svg.append(circle);
-  const pathData = passes
-    ? ["m16 9-5.5 5.5L8 12"]
-    : ["m15 9-6 6", "m9 9 6 6"];
+  const pathData = passes ? ["m16 9-5.5 5.5L8 12"] : ["m15 9-6 6", "m9 9 6 6"];
   pathData.forEach((data) => {
     const path = document.createElementNS(svg.namespaceURI, "path");
     path.setAttribute("d", data);
@@ -116,7 +125,9 @@ function contrastGrade(level, threshold, ratio) {
   const badge = el("span", `contrast-chip ${passes ? "pass" : "fail"}`);
   badge.append(
     contrastIcon(passes),
-    document.createTextNode(`${level} ≥ ${threshold}:1 · ${passes ? "Pass" : "Fail"}`)
+    document.createTextNode(
+      `${level} ≥ ${threshold}:1 · ${passes ? "Pass" : "Fail"}`,
+    ),
   );
   return badge;
 }
@@ -149,9 +160,15 @@ function parseRgb(value) {
   }
   const hex = value.match(/^#([0-9a-f]{3,8})$/i);
   if (hex) {
-    const digits = hex[1].length === 3 || hex[1].length === 4
-      ? hex[1].slice(0, 3).split("").map((part) => Number.parseInt(part + part, 16))
-      : [0, 2, 4].map((index) => Number.parseInt(hex[1].slice(index, index + 2), 16));
+    const digits =
+      hex[1].length === 3 || hex[1].length === 4
+        ? hex[1]
+            .slice(0, 3)
+            .split("")
+            .map((part) => Number.parseInt(part + part, 16))
+        : [0, 2, 4].map((index) =>
+            Number.parseInt(hex[1].slice(index, index + 2), 16),
+          );
     return digits.length === 3 && digits.every(Number.isFinite) ? digits : null;
   }
   return null;
@@ -164,7 +181,8 @@ function contrastingText(color) {
     value /= 255;
     return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
   });
-  const luminance = 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+  const luminance =
+    0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
   return luminance > 0.179 ? "#242424" : "#ffffff";
 }
 
@@ -186,8 +204,15 @@ function appendColorValue(parent, label, value) {
   const swatch = el("span", "inline-swatch");
   swatch.style.backgroundColor = value;
   swatch.setAttribute("aria-hidden", "true");
-  valueWrap.append(swatch, el("span", "color-code", value), makeCopyButton(value));
-  parent.append(el("dt", "", label), Object.assign(el("dd"), { className: "color-detail" }));
+  valueWrap.append(
+    swatch,
+    el("span", "color-code", value),
+    makeCopyButton(value),
+  );
+  parent.append(
+    el("dt", "", label),
+    Object.assign(el("dd"), { className: "color-detail" }),
+  );
   parent.lastElementChild.append(valueWrap);
 }
 
@@ -203,7 +228,7 @@ async function runScan() {
   const result = await sendBackground({
     type: "INSPECTOR_SCAN",
     tabId: tab.id,
-    payload: { limit: 250 }
+    payload: { limit: 250 },
   });
   state.snapshot = result.snapshot;
   await saveSnapshot(state.snapshot);
@@ -215,7 +240,10 @@ async function runScan() {
 async function saveSnapshot(snapshot) {
   const data = await chrome.storage.local.get(SNAPSHOT_KEY);
   const existing = Array.isArray(data[SNAPSHOT_KEY]) ? data[SNAPSHOT_KEY] : [];
-  const next = [snapshot, ...existing.filter((item) => item.url !== snapshot.url)].slice(0, 10);
+  const next = [
+    snapshot,
+    ...existing.filter((item) => item.url !== snapshot.url),
+  ].slice(0, 10);
   await chrome.storage.local.set({ [SNAPSHOT_KEY]: next });
 }
 
@@ -228,17 +256,29 @@ function renderSnapshot() {
   setMetric(metrics, snapshot.colors.length, "color values");
   setMetric(metrics, snapshot.typography.length, "type combinations");
   setMetric(metrics, snapshot.assets.length, "assets");
-  setMetric(metrics, snapshot.accessibility.filter((item) => item.severity === "fail").length, "contrast/a11y fails");
+  setMetric(
+    metrics,
+    snapshot.accessibility.filter((item) => item.severity === "fail").length,
+    "contrast/a11y fails",
+  );
   setMetric(metrics, snapshot.counts.headings, "headings");
 
   const recent = document.querySelector("#recent-findings");
   recent.replaceChildren();
   snapshot.accessibility.slice(0, 8).forEach((finding) => {
     const row = el("div", `finding-row ${finding.severity}`);
-    row.append(el("strong", "", finding.message), el("span", "", `${finding.confidence} · ${finding.selector || "document"}`));
+    row.append(
+      el("strong", "", finding.message),
+      el(
+        "span",
+        "",
+        `${finding.confidence} · ${finding.selector || "document"}`,
+      ),
+    );
     recent.append(row);
   });
-  if (!recent.children.length) recent.append(el("p", "", "No automated findings detected."));
+  if (!recent.children.length)
+    recent.append(el("p", "", "No automated findings detected."));
 
   renderColors();
 
@@ -246,7 +286,11 @@ function renderSnapshot() {
   type.replaceChildren();
   snapshot.typography.forEach((item) => {
     const row = el("article", "type-card");
-    const preview = el("p", "font-preview", item.sample || "The quick brown fox");
+    const preview = el(
+      "p",
+      "font-preview",
+      item.sample || "The quick brown fox",
+    );
     preview.style.fontFamily = item.style.fontFamily;
     preview.style.fontSize = `${Math.max(14, Math.min(Number.parseFloat(item.style.fontSize) || 16, 44))}px`;
     preview.style.fontWeight = item.style.fontWeight;
@@ -256,7 +300,11 @@ function renderSnapshot() {
     const heading = el("div", "type-card-heading");
     heading.append(
       el("strong", "", item.style.fontFamily),
-      el("span", "", `${item.count} ${item.count === 1 ? "instance" : "instances"}`)
+      el(
+        "span",
+        "",
+        `${item.count} ${item.count === 1 ? "instance" : "instances"}`,
+      ),
     );
     const properties = el("dl", "type-properties");
     [
@@ -265,7 +313,7 @@ function renderSnapshot() {
       ["Color", item.style.color],
       ["Line height", item.style.lineHeight],
       ["Font weight", item.style.fontWeight],
-      ["Letter spacing", item.style.letterSpacing]
+      ["Letter spacing", item.style.letterSpacing],
     ].forEach(([name, value]) => {
       properties.append(el("dt", "", name), el("dd", "", value));
     });
@@ -273,17 +321,27 @@ function renderSnapshot() {
     (item.selectors || []).forEach((selector) => {
       const group = selector.selector.startsWith("#")
         ? "id"
-        : selector.selector.includes(".") ? "class" : "element";
+        : selector.selector.includes(".")
+          ? "class"
+          : "element";
       groups[group].push(selector);
     });
     const selectorGroups = el("div", "selector-groups");
     Object.entries(groups).forEach(([name, selectors]) => {
       if (!selectors.length) return;
       const section = el("section", "selector-group");
-      const groupLabel = { element: "Elements", class: "Classes", id: "IDs" }[name];
+      const groupLabel = { element: "Elements", class: "Classes", id: "IDs" }[
+        name
+      ];
       section.append(el("strong", "", groupLabel));
       selectors.forEach((selector) => {
-        section.append(el("span", "selector-item", `${selector.selector} · ${selector.count}`));
+        section.append(
+          el(
+            "span",
+            "selector-item",
+            `${selector.selector} · ${selector.count}`,
+          ),
+        );
       });
       selectorGroups.append(section);
     });
@@ -296,36 +354,43 @@ function renderSnapshot() {
   snapshot.accessibility.forEach((finding) => {
     const row = el("div", `finding-row ${finding.severity}`);
     const title = el("strong", "", finding.message);
-    const evidence = el("span", "", `${finding.confidence} · ${finding.selector || "document"}`);
+    const evidence = el(
+      "span",
+      "",
+      `${finding.confidence} · ${finding.selector || "document"}`,
+    );
     row.append(title, evidence);
     if (/contrast/i.test(finding.message)) {
       const passes = finding.severity !== "fail";
       const status = el("span", `contrast-chip ${passes ? "pass" : "fail"}`);
       status.append(
         contrastIcon(passes),
-        document.createTextNode(passes ? "Contrast pass" : "Contrast fail")
+        document.createTextNode(passes ? "Contrast pass" : "Contrast fail"),
       );
       row.append(status);
     }
     findings.append(row);
   });
-  if (!findings.children.length) findings.append(el("p", "", "No automated findings detected."));
+  if (!findings.children.length)
+    findings.append(el("p", "", "No automated findings detected."));
 
   renderAssets();
 }
 
 function colorLabel(category) {
-  return ({
-    text: "Text",
-    background: "Background",
-    border: "Borders",
-    outline: "Outlines",
-    accent: "Accents",
-    fill: "SVG fills",
-    stroke: "SVG strokes",
-    shadow: "Shadows",
-    gradient: "Linear gradients"
-  })[category] || category;
+  return (
+    {
+      text: "Text",
+      background: "Background",
+      border: "Borders",
+      outline: "Outlines",
+      accent: "Accents",
+      fill: "SVG fills",
+      stroke: "SVG strokes",
+      shadow: "Shadows",
+      gradient: "Linear gradients",
+    }[category] || category
+  );
 }
 
 function makeColorCard(color) {
@@ -344,12 +409,16 @@ function makeColorCard(color) {
   const meta = el("div", "color-card-meta");
   meta.append(
     el("strong", "color-code", color.value),
-    el("span", "color-category", colorLabel(color.category))
+    el("span", "color-category", colorLabel(color.category)),
   );
   const actions = el("div", "color-actions");
   actions.append(
     makeCopyButton(color.value),
-    el("span", "instance-count", `${color.count} ${color.count === 1 ? "instance" : "instances"}`)
+    el(
+      "span",
+      "instance-count",
+      `${color.count} ${color.count === 1 ? "instance" : "instances"}`,
+    ),
   );
   content.append(meta, actions);
   card.append(content);
@@ -379,7 +448,11 @@ function renderColors() {
     const heading = el("div", "category-heading");
     heading.append(
       el("h2", "", colorLabel(category)),
-      el("span", "", `${items.length} ${items.length === 1 ? "color" : "colors"}`)
+      el(
+        "span",
+        "",
+        `${items.length} ${items.length === 1 ? "color" : "colors"}`,
+      ),
     );
     group.append(heading);
     items.forEach((color) => group.append(makeColorCard(color)));
@@ -390,7 +463,9 @@ function renderColors() {
 function renderAssets() {
   const assets = document.querySelector("#asset-results");
   if (!state.snapshot) {
-    assets.replaceChildren(el("p", "empty-copy", "Scan the page to find assets."));
+    assets.replaceChildren(
+      el("p", "empty-copy", "Scan the page to find assets."),
+    );
     return;
   }
   assets.replaceChildren();
@@ -398,13 +473,15 @@ function renderAssets() {
   assets.classList.toggle("asset-list", assetLayout === "list");
   const entries = state.snapshot.assets;
   const imageCount = entries.filter((asset) => asset.kind === "image").length;
-  const backgroundCount = entries.filter((asset) => asset.kind === "background").length;
+  const backgroundCount = entries.filter(
+    (asset) => asset.kind === "background",
+  ).length;
   const badges = document.querySelector("#asset-badges");
   badges.replaceChildren();
   badges.append(
     el("span", "count-badge", `${entries.length} total`),
     el("span", "count-badge", `${imageCount} images`),
-    el("span", "count-badge", `${backgroundCount} backgrounds`)
+    el("span", "count-badge", `${backgroundCount} backgrounds`),
   );
   if (!entries.length) {
     assets.append(el("p", "empty-copy", "No image assets found."));
@@ -418,27 +495,44 @@ function renderAssets() {
     image.alt = asset.alt || `${asset.kind} asset preview`;
     image.loading = "lazy";
     image.referrerPolicy = "no-referrer";
-    image.addEventListener("error", () => {
-      image.hidden = true;
-      preview.append(el("span", "asset-unavailable", "Preview unavailable"));
-    }, { once: true });
+    image.addEventListener(
+      "error",
+      () => {
+        image.hidden = true;
+        preview.append(el("span", "asset-unavailable", "Preview unavailable"));
+      },
+      { once: true },
+    );
     preview.append(image);
     const info = el("div", "asset-info");
     info.append(
       el("strong", "", asset.alt || asset.kind),
-      el("span", "", `${asset.kind} · ${asset.naturalWidth || "?"} × ${asset.naturalHeight || "?"}`),
-      el("span", "asset-url", asset.url)
+      el(
+        "span",
+        "",
+        `${asset.kind} · ${asset.naturalWidth || "?"} × ${asset.naturalHeight || "?"}`,
+      ),
+      el("span", "asset-url", asset.url),
     );
     const download = el("button", "icon-action");
     download.type = "button";
     download.title = "Download asset";
-    download.setAttribute("aria-label", `Download ${asset.alt || asset.kind} asset`);
+    download.setAttribute(
+      "aria-label",
+      `Download ${asset.alt || asset.kind} asset`,
+    );
     download.append(downloadIcon());
-    download.addEventListener("click", () => chrome.downloads.download({
-      url: asset.url,
-      conflictAction: "uniquify",
-      saveAs: false
-    }).catch((error) => console.error("[Purrfect CSS] Could not download asset.", error)));
+    download.addEventListener("click", () =>
+      chrome.downloads
+        .download({
+          url: asset.url,
+          conflictAction: "uniquify",
+          saveAs: false,
+        })
+        .catch((error) =>
+          console.error("[Purrfect CSS] Could not download asset.", error),
+        ),
+    );
     card.append(preview, info, download);
     assets.append(card);
   });
@@ -458,7 +552,9 @@ function appendStyledValue(parent, value) {
   for (const match of value.matchAll(colorPattern)) {
     const color = match[0];
     if (match.index > previousIndex) {
-      wrap.append(document.createTextNode(value.slice(previousIndex, match.index)));
+      wrap.append(
+        document.createTextNode(value.slice(previousIndex, match.index)),
+      );
     }
     const swatch = el("span", "inline-swatch");
     swatch.style.backgroundColor = color;
@@ -509,16 +605,25 @@ function renderSelection(element) {
   const list = el("dl", "property-list");
   const properties = [
     ["Element", element.selector],
-    ["Dimensions", `${Math.round(element.rect.width)} × ${Math.round(element.rect.height)} px`],
-    ["Position", `${Math.round(element.rect.x)}, ${Math.round(element.rect.y)}`],
-    ["Font", `${element.styles.fontFamily} · ${element.styles.fontSize} · ${element.styles.fontWeight}`],
+    [
+      "Dimensions",
+      `${Math.round(element.rect.width)} × ${Math.round(element.rect.height)} px`,
+    ],
+    [
+      "Position",
+      `${Math.round(element.rect.x)}, ${Math.round(element.rect.y)}`,
+    ],
+    [
+      "Font",
+      `${element.styles.fontFamily} · ${element.styles.fontSize} · ${element.styles.fontWeight}`,
+    ],
     ["Line height", element.styles.lineHeight],
     ["Letter spacing", element.styles.letterSpacing],
     ["Border radius", element.styles.borderRadius],
     ["Border", element.styles.border],
     ["Box shadow", element.styles.boxShadow],
     ["Text shadow", element.styles.textShadow],
-    ["Display", element.styles.display]
+    ["Display", element.styles.display],
   ];
   properties.forEach(([name, value]) => {
     list.append(el("dt", "", name));
@@ -540,8 +645,20 @@ function renderSelection(element) {
     contrast.setAttribute("role", "status");
     contrast.append(el("strong", "contrast-ratio", `Text contrast ${ratio}:1`));
     [
-      { label: "Normal text", grades: [["AA", 4.5], ["AAA", 7]] },
-      { label: "Large text", grades: [["AA", 3], ["AAA", 4.5]] }
+      {
+        label: "Normal text",
+        grades: [
+          ["AA", 4.5],
+          ["AAA", 7],
+        ],
+      },
+      {
+        label: "Large text",
+        grades: [
+          ["AA", 3],
+          ["AAA", 4.5],
+        ],
+      },
     ].forEach(({ label, grades }) => {
       const row = el("div", "contrast-grade-row");
       row.append(el("strong", "contrast-grade-label", label));
@@ -560,14 +677,16 @@ async function toggleInspector() {
   const response = await sendBackground({
     type: "INSPECTOR_COMMAND",
     tabId: tab.id,
-    payload: { type: "INSPECTOR_TOGGLE", payload: { active: isActivating } }
+    payload: { type: "INSPECTOR_TOGGLE", payload: { active: isActivating } },
   });
   if (response?.active !== isActivating) {
     throw new Error("Could not update the inspector state.");
   }
   state.inspectorActive = response.active;
   const button = document.querySelector("#inspector-button");
-  button.textContent = state.inspectorActive ? "Disable inspector" : "Enable inspector";
+  button.textContent = state.inspectorActive
+    ? "Disable inspector"
+    : "Enable inspector";
   button.classList.toggle("inspector-active", state.inspectorActive);
   const selectedDetails = document.querySelector("#selected-details");
   const selectedEmpty = document.querySelector("#selected-empty");
@@ -575,12 +694,14 @@ async function toggleInspector() {
     selectedDetails.replaceChildren();
     selectedDetails.hidden = true;
     selectedEmpty.hidden = false;
-    selectedEmpty.textContent = "Inspector is off. Enable Inspector, then click an element on the page.";
+    selectedEmpty.textContent =
+      "Inspector is off. Enable Inspector, then click an element on the page.";
     return;
   }
   if (selectedDetails.hidden) {
     selectedEmpty.hidden = false;
-    selectedEmpty.textContent = "Inspector is on. Click an element on the page to inspect it.";
+    selectedEmpty.textContent =
+      "Inspector is on. Click an element on the page to inspect it.";
   }
 }
 
@@ -598,7 +719,9 @@ document.querySelectorAll(".tab").forEach((tab) => {
     });
     tab.classList.add("active");
     tab.setAttribute("aria-current", "page");
-    document.querySelectorAll(".view").forEach((view) => { view.hidden = true; });
+    document.querySelectorAll(".view").forEach((view) => {
+      view.hidden = true;
+    });
     document.querySelector(`#${tab.dataset.view}-view`).hidden = false;
     if (tab.dataset.view === "assets") renderAssets();
   });
@@ -613,7 +736,9 @@ document.querySelector("#inspector-button").addEventListener("click", () => {
   toggleInspector().catch((error) => alert(error.message));
 });
 document.querySelector("#copy-palette-button").addEventListener("click", () => {
-  const palette = [...new Set((state.snapshot?.colors || []).map((color) => color.value))].join("\n");
+  const palette = [
+    ...new Set((state.snapshot?.colors || []).map((color) => color.value)),
+  ].join("\n");
   copyText(palette, document.querySelector("#copy-palette-button"));
 });
 document.querySelectorAll(".color-view-button").forEach((button) => {
@@ -627,13 +752,18 @@ document.querySelectorAll(".color-view-button").forEach((button) => {
     renderColors();
   });
 });
-document.querySelector("#download-assets-button").addEventListener("click", async () => {
-  for (const asset of state.snapshot?.assets || []) {
-    if (!/^https?:/.test(asset.url)) continue;
-    await chrome.downloads.download({ url: asset.url, conflictAction: "uniquify", saveAs: false })
-      .catch((error) => console.error("[Purrfect CSS] Could not download asset.", error));
-  }
-});
+document
+  .querySelector("#download-assets-button")
+  .addEventListener("click", async () => {
+    for (const asset of state.snapshot?.assets || []) {
+      if (!/^https?:/.test(asset.url)) continue;
+      await chrome.downloads
+        .download({ url: asset.url, conflictAction: "uniquify", saveAs: false })
+        .catch((error) =>
+          console.error("[Purrfect CSS] Could not download asset.", error),
+        );
+    }
+  });
 document.querySelectorAll(".asset-view-button").forEach((button) => {
   button.addEventListener("click", () => {
     assetLayout = button.dataset.layout;
@@ -647,7 +777,9 @@ document.querySelectorAll(".asset-view-button").forEach((button) => {
 });
 document.querySelector("#export-button").addEventListener("click", () => {
   if (!state.snapshot) return;
-  const blob = new Blob([JSON.stringify(state.snapshot, null, 2)], { type: "application/json" });
+  const blob = new Blob([JSON.stringify(state.snapshot, null, 2)], {
+    type: "application/json",
+  });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
@@ -655,7 +787,10 @@ document.querySelector("#export-button").addEventListener("click", () => {
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
-document.querySelector("#dashboard-button").addEventListener("click", () => chrome.runtime.openOptionsPage());
-document.querySelector("#close-button").addEventListener("click", () => window.close());
+document
+  .querySelector("#dashboard-button")
+  .addEventListener("click", () => chrome.runtime.openOptionsPage());
 
-activeTab().then((tab) => ensureContent(tab).catch(() => {})).catch(() => {});
+activeTab()
+  .then((tab) => ensureContent(tab).catch(() => {}))
+  .catch(() => {});

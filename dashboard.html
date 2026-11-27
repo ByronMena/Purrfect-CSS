@@ -13,9 +13,20 @@
         <span>Purrfect CSS</span>
       </div>
       <nav aria-label="Dashboard">
-        <button class="nav-item active" type="button" data-view="stylesheets" aria-current="page">Stylesheets</button>
-        <button class="nav-item" type="button" data-view="domains">Domains</button>
-        <button class="nav-item" type="button" data-view="settings">Settings</button>
+        <button
+          class="nav-item active"
+          type="button"
+          data-view="stylesheets"
+          aria-current="page"
+        >
+          Stylesheets
+        </button>
+        <button class="nav-item" type="button" data-view="domains">
+          Domains
+        </button>
+        <button class="nav-item" type="button" data-view="settings">
+          Settings
+        </button>
       </nav>
     </aside>
 
@@ -26,21 +37,36 @@
             <h1>Stylesheets</h1>
             <p>Reusable CSS for all your domains.</p>
           </div>
-          <button id="upload-dashboard-button" class="primary" type="button">Upload CSS</button>
-          <input id="dashboard-file-input" type="file" accept=".css,text/css" hidden />
+          <button id="upload-dashboard-button" class="primary" type="button">
+            Upload CSS
+          </button>
+          <input
+            id="dashboard-file-input"
+            type="file"
+            accept=".css,text/css"
+            hidden
+          />
         </header>
 
         <div class="master-detail">
           <section class="list-pane" aria-label="Stylesheet list">
-            <label class="search-label" for="stylesheet-search">Search stylesheets</label>
-            <input id="stylesheet-search" type="search" placeholder="Search stylesheets" />
+            <label class="search-label" for="stylesheet-search"
+              >Search stylesheets</label
+            >
+            <input
+              id="stylesheet-search"
+              type="search"
+              placeholder="Search stylesheets"
+            />
             <div id="stylesheet-list" class="data-list"></div>
           </section>
 
           <section class="detail-pane" aria-label="Stylesheet details">
             <div id="stylesheet-empty" class="empty-state">
               <h2>Select a stylesheet</h2>
-              <p>Choose one to edit or manage the domains where it is applied.</p>
+              <p>
+                Choose one to edit or manage the domains where it is applied.
+              </p>
             </div>
             <div id="stylesheet-detail" hidden>
               <div class="detail-header">
@@ -51,16 +77,27 @@
                 <div class="detail-actions">
                   <button id="duplicate-button" type="button">Duplicate</button>
                   <button id="export-button" type="button">Export</button>
-                  <button id="delete-button" class="danger" type="button">Delete</button>
+                  <button id="delete-button" class="danger" type="button">
+                    Delete
+                  </button>
                 </div>
               </div>
               <label for="stylesheet-editor">CSS</label>
-              <textarea id="stylesheet-editor" maxlength="262144" spellcheck="false"></textarea>
+              <textarea
+                id="stylesheet-editor"
+                maxlength="262144"
+                spellcheck="false"
+              ></textarea>
               <div class="save-row">
-                <button id="save-button" class="primary" type="button">Save changes</button>
+                <button id="save-button" class="primary" type="button">
+                  Save changes
+                </button>
                 <p id="dashboard-status" role="status" aria-live="polite"></p>
               </div>
-              <section class="applied-domains" aria-labelledby="applied-domains-title">
+              <section
+                class="applied-domains"
+                aria-labelledby="applied-domains-title"
+              >
                 <h2 id="applied-domains-title">Applied domains</h2>
                 <div id="applied-domain-list"></div>
               </section>
@@ -99,25 +136,40 @@
         <div class="settings-section">
           <h2>CSS safety</h2>
           <dl>
-            <dt>Maximum stylesheet size</dt><dd>256 KB</dd>
-            <dt>External resource URLs</dt><dd>Blocked</dd>
-            <dt>CSS imports</dt><dd>Blocked</dd>
+            <dt>Maximum stylesheet size</dt>
+            <dd>256 KB</dd>
+            <dt>External resource URLs</dt>
+            <dd>Blocked</dd>
+            <dt>CSS imports</dt>
+            <dd>Blocked</dd>
           </dl>
         </div>
         <div class="settings-section">
           <h2>Local data</h2>
-          <button id="export-all-button" type="button">Export all stylesheets</button>
-          <button id="clear-button" class="danger" type="button">Clear all Purrfect CSS data</button>
+          <button id="export-all-button" type="button">
+            Export all stylesheets
+          </button>
+          <button id="clear-button" class="danger" type="button">
+            Clear all Purrfect CSS data
+          </button>
         </div>
       </section>
 
       <footer class="dashboard-footer">
         <p>Created by Byron Mena</p>
         <nav aria-label="Author profiles">
-          <a href="https://www.linkedin.com/in/byronmena/" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://www.linkedin.com/in/byronmena/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             LinkedIn
           </a>
-          <a href="https://github.com/ByronMena" target="_blank" rel="noopener noreferrer">
+          <a
+            href="https://github.com/ByronMena"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             GitHub
           </a>
         </nav>

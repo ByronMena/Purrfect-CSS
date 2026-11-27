@@ -20,8 +20,10 @@ function hostnameMatchesDomain(hostname, domain) {
   const normalizedHost = normalizeHostname(`https://${hostname}/`);
   const normalizedDomain = normalizeHostname(`https://${domain}/`);
   if (!normalizedHost || !normalizedDomain) return false;
-  return normalizedHost === normalizedDomain ||
-    normalizedHost.endsWith(`.${normalizedDomain}`);
+  return (
+    normalizedHost === normalizedDomain ||
+    normalizedHost.endsWith(`.${normalizedDomain}`)
+  );
 }
 
 function findMatchingRule(hostname, rules) {
@@ -63,12 +65,13 @@ async function removeRegisteredScript(hostname) {
     `*://${normalizedHost}/*`,
     `*://*.${normalizedHost}/*`,
     `*://www.${normalizedHost}/*`,
-    `*://*.www.${normalizedHost}/*`
+    `*://*.www.${normalizedHost}/*`,
   ]);
   const ids = registered
-    .filter((script) =>
-      script.id.startsWith("purrfect_css_") &&
-      script.matches?.some((pattern) => patterns.has(pattern))
+    .filter(
+      (script) =>
+        script.id.startsWith("purrfect_css_") &&
+        script.matches?.some((pattern) => patterns.has(pattern)),
     )
     .map((script) => script.id);
   if (!ids.length) return false;
@@ -80,20 +83,24 @@ async function removeCssFromMatchingTabs(hostname, css) {
   if (!css) return;
   const tabs = await chrome.tabs.query({});
   const failures = [];
-  await Promise.all(tabs.map(async (tab) => {
-    if (!Number.isInteger(tab.id)) return;
-    const tabHostname = normalizeHostname(tab.url);
-    if (!tabHostname || !hostnameMatchesDomain(tabHostname, hostname)) return;
-    try {
-      await chrome.scripting.removeCSS({ target: { tabId: tab.id }, css });
-      tabCssCache.delete(tab.id);
-    } catch (error) {
-      console.warn("[Purrfect CSS] Could not remove CSS from tab.", error);
-      failures.push(error);
-    }
-  }));
+  await Promise.all(
+    tabs.map(async (tab) => {
+      if (!Number.isInteger(tab.id)) return;
+      const tabHostname = normalizeHostname(tab.url);
+      if (!tabHostname || !hostnameMatchesDomain(tabHostname, hostname)) return;
+      try {
+        await chrome.scripting.removeCSS({ target: { tabId: tab.id }, css });
+        tabCssCache.delete(tab.id);
+      } catch (error) {
+        console.warn("[Purrfect CSS] Could not remove CSS from tab.", error);
+        failures.push(error);
+      }
+    }),
+  );
   if (failures.length) {
-    throw new Error(`Could not remove CSS from ${failures.length} matching tab(s).`);
+    throw new Error(
+      `Could not remove CSS from ${failures.length} matching tab(s).`,
+    );
   }
 }
 
@@ -101,9 +108,11 @@ async function matchingTabs(hostname) {
   const tabs = await chrome.tabs.query({});
   return tabs.filter((tab) => {
     const tabHostname = normalizeHostname(tab.url);
-    return Number.isInteger(tab.id) &&
+    return (
+      Number.isInteger(tab.id) &&
       tabHostname &&
-      hostnameMatchesDomain(tabHostname, hostname);
+      hostnameMatchesDomain(tabHostname, hostname)
+    );
   });
 }
 
@@ -113,7 +122,8 @@ async function reloadMatchingTabs(hostname) {
 }
 
 async function applyStylesheet(hostname, stylesheetId, previousCss, tabId) {
-  if (!hostname || !stylesheetId) throw new Error("Missing domain or stylesheet.");
+  if (!hostname || !stylesheetId)
+    throw new Error("Missing domain or stylesheet.");
 
   const stylesheets = await getStylesheets();
   const stylesheet = stylesheets.find((item) => item.id === stylesheetId);
@@ -124,24 +134,31 @@ async function applyStylesheet(hostname, stylesheetId, previousCss, tabId) {
   if (previousCss) {
     await removeCssFromMatchingTabs(hostname, previousCss);
   } else if (previous?.stylesheetId) {
-    const previousStylesheet = stylesheets.find((item) => item.id === previous.stylesheetId);
+    const previousStylesheet = stylesheets.find(
+      (item) => item.id === previous.stylesheetId,
+    );
     await removeCssFromMatchingTabs(hostname, previousStylesheet?.css);
   }
 
   rules[hostname] = {
     stylesheetId,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
   await chrome.storage.local.set({ [DOMAIN_RULES_KEY]: rules });
   const tabs = await matchingTabs(hostname);
-  await Promise.all(tabs.map(async (tab) => {
-    try {
-      await chrome.scripting.insertCSS({ target: { tabId: tab.id }, css: stylesheet.css });
-      tabCssCache.set(tab.id, { hostname, css: stylesheet.css });
-    } catch (error) {
-      console.warn("[Purrfect CSS] Could not insert CSS in tab.", error);
-    }
-  }));
+  await Promise.all(
+    tabs.map(async (tab) => {
+      try {
+        await chrome.scripting.insertCSS({
+          target: { tabId: tab.id },
+          css: stylesheet.css,
+        });
+        tabCssCache.set(tab.id, { hostname, css: stylesheet.css });
+      } catch (error) {
+        console.warn("[Purrfect CSS] Could not insert CSS in tab.", error);
+      }
+    }),
+  );
 
   return { hostname, stylesheet };
 }
@@ -152,7 +169,9 @@ async function removeDomainCss(hostname, tabId) {
   const ruleHostname = match?.domain || hostname;
   const previous = match?.rule;
   const stylesheets = await getStylesheets();
-  const stylesheet = stylesheets.find((item) => item.id === previous?.stylesheetId);
+  const stylesheet = stylesheets.find(
+    (item) => item.id === previous?.stylesheetId,
+  );
 
   const hadRegisteredCss = await removeRegisteredScript(ruleHostname);
   delete rules[ruleHostname];
@@ -167,7 +186,10 @@ async function removeDomainCss(hostname, tabId) {
     await reloadMatchingTabs(ruleHostname);
   }
   if (removeError && !hadRegisteredCss) {
-    console.warn("[Purrfect CSS] Reloaded matching tabs after CSS removal failed.", removeError);
+    console.warn(
+      "[Purrfect CSS] Reloaded matching tabs after CSS removal failed.",
+      removeError,
+    );
   }
   return { hostname: ruleHostname };
 }
@@ -195,11 +217,16 @@ async function deleteStylesheet(stylesheetId) {
 
   await chrome.storage.local.set({
     [STYLESHEETS_KEY]: stylesheets.filter((item) => item.id !== stylesheetId),
-    [DOMAIN_RULES_KEY]: rules
+    [DOMAIN_RULES_KEY]: rules,
   });
-  await Promise.all(Array.from(reloadDomains, (hostname) => reloadMatchingTabs(hostname)));
+  await Promise.all(
+    Array.from(reloadDomains, (hostname) => reloadMatchingTabs(hostname)),
+  );
   if (removalFailures.length) {
-    console.warn("[Purrfect CSS] Reloaded matching tabs after stylesheet removal failures.", removalFailures);
+    console.warn(
+      "[Purrfect CSS] Reloaded matching tabs after stylesheet removal failures.",
+      removalFailures,
+    );
   }
   return { deleted: Boolean(stylesheet) };
 }
@@ -209,44 +236,54 @@ async function migrateLegacyState() {
     "stylesheets",
     "domainRules",
     "draftCss",
-    "uploadedCss"
+    "uploadedCss",
   ]);
 
   let stylesheets = Array.isArray(data.stylesheets) ? data.stylesheets : [];
   let changed = false;
 
-  if (!stylesheets.length && typeof data.uploadedCss === "string" && data.uploadedCss.trim()) {
+  if (
+    !stylesheets.length &&
+    typeof data.uploadedCss === "string" &&
+    data.uploadedCss.trim()
+  ) {
     stylesheets.push({
       id: `uploaded-${Date.now()}`,
       name: "Uploaded CSS",
       source: "uploaded",
       css: data.uploadedCss,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     changed = true;
   }
 
-  if (!stylesheets.length && typeof data.draftCss === "string" && data.draftCss.trim()) {
+  if (
+    !stylesheets.length &&
+    typeof data.draftCss === "string" &&
+    data.draftCss.trim()
+  ) {
     stylesheets.push({
       id: `editor-${Date.now()}`,
       name: "Custom CSS",
       source: "editor",
       css: data.draftCss,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     });
     changed = true;
   }
 
-  const rules = data.domainRules && typeof data.domainRules === "object"
-    ? data.domainRules
-    : {};
+  const rules =
+    data.domainRules && typeof data.domainRules === "object"
+      ? data.domainRules
+      : {};
 
   if (Object.keys(rules).length === 0) {
     const legacy = await chrome.storage.local.get(null);
     for (const [key, value] of Object.entries(legacy)) {
-      if (!key.startsWith("appliedCss:") || !value?.css || !value?.url) continue;
+      if (!key.startsWith("appliedCss:") || !value?.css || !value?.url)
+        continue;
       const hostname = normalizeHostname(value.url);
       if (!hostname) continue;
 
@@ -258,13 +295,13 @@ async function migrateLegacyState() {
           source: "editor",
           css: value.css,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
         stylesheets.push(stylesheet);
       }
       rules[hostname] = {
         stylesheetId: stylesheet.id,
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
       };
       changed = true;
     }
@@ -273,7 +310,7 @@ async function migrateLegacyState() {
   if (changed || !Array.isArray(data.stylesheets) || !data.domainRules) {
     await chrome.storage.local.set({
       stylesheets,
-      domainRules: rules
+      domainRules: rules,
     });
   }
 }
@@ -281,27 +318,27 @@ async function migrateLegacyState() {
 async function restoreRegisteredScripts() {
   const registered = await chrome.scripting.getRegisteredContentScripts();
   const legacyScripts = registered.filter((script) =>
-    script.id.startsWith("purrfect_css_")
+    script.id.startsWith("purrfect_css_"),
   );
   if (!legacyScripts.length) return;
 
   await chrome.scripting.unregisterContentScripts({
-    ids: legacyScripts.map((script) => script.id)
+    ids: legacyScripts.map((script) => script.id),
   });
 
   const domains = new Set();
   for (const script of legacyScripts) {
     for (const pattern of script.matches || []) {
-      const domain = pattern
-        .replace(/^\*:\/\/(?:\*\.)?/, "")
-        .split("/")[0];
+      const domain = pattern.replace(/^\*:\/\/(?:\*\.)?/, "").split("/")[0];
       if (domain && !domain.includes("*")) {
         const normalized = normalizeHostname(`https://${domain}/`);
         if (normalized) domains.add(normalized);
       }
     }
   }
-  await Promise.all(Array.from(domains, (hostname) => reloadMatchingTabs(hostname)));
+  await Promise.all(
+    Array.from(domains, (hostname) => reloadMatchingTabs(hostname)),
+  );
 }
 
 const tabCssCache = new Map();
@@ -316,10 +353,13 @@ async function syncTabCss(tab) {
       try {
         await chrome.scripting.removeCSS({
           target: { tabId: tab.id },
-          css: previous.css
+          css: previous.css,
         });
       } catch (error) {
-        console.warn("[Purrfect CSS] Could not clear CSS for unsupported page.", error);
+        console.warn(
+          "[Purrfect CSS] Could not clear CSS for unsupported page.",
+          error,
+        );
       }
     }
     tabCssCache.delete(tab.id);
@@ -333,10 +373,13 @@ async function syncTabCss(tab) {
       try {
         await chrome.scripting.removeCSS({
           target: { tabId: tab.id },
-          css: previous.css
+          css: previous.css,
         });
       } catch (error) {
-        console.warn("[Purrfect CSS] Could not clear inactive domain CSS.", error);
+        console.warn(
+          "[Purrfect CSS] Could not clear inactive domain CSS.",
+          error,
+        );
       }
     }
     tabCssCache.delete(tab.id);
@@ -344,7 +387,9 @@ async function syncTabCss(tab) {
   }
 
   const stylesheets = await getStylesheets();
-  const stylesheet = stylesheets.find((item) => item.id === match.rule.stylesheetId);
+  const stylesheet = stylesheets.find(
+    (item) => item.id === match.rule.stylesheetId,
+  );
   if (!stylesheet) {
     tabCssCache.delete(tab.id);
     return;
@@ -355,21 +400,27 @@ async function syncTabCss(tab) {
     try {
       await chrome.scripting.removeCSS({
         target: { tabId: tab.id },
-        css: previous.css
+        css: previous.css,
       });
     } catch (error) {
-      console.warn("[Purrfect CSS] Could not replace previous domain CSS.", error);
+      console.warn(
+        "[Purrfect CSS] Could not replace previous domain CSS.",
+        error,
+      );
     }
   }
 
   try {
     await chrome.scripting.insertCSS({
       target: { tabId: tab.id },
-      css: stylesheet.css
+      css: stylesheet.css,
     });
     tabCssCache.set(tab.id, { hostname, css: stylesheet.css });
   } catch (error) {
-    console.warn("[Purrfect CSS] Could not apply CSS during navigation.", error);
+    console.warn(
+      "[Purrfect CSS] Could not apply CSS during navigation.",
+      error,
+    );
   }
 }
 
@@ -397,42 +448,55 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     sender.id !== chrome.runtime.id ||
     !message ||
     typeof message.type !== "string"
-  ) return false;
+  )
+    return false;
 
   (async () => {
     switch (message.type) {
       case "INSPECTOR_ENSURE_CONTENT":
-        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
+        if (!Number.isInteger(message.tabId))
+          throw new Error("A valid tab is required.");
         await chrome.scripting.executeScript({
           target: { tabId: message.tabId, allFrames: false },
-          files: ["content.js"]
+          files: ["content.js"],
         });
         sendResponse({ ready: true });
         break;
       case "INSPECTOR_COMMAND":
-        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
-        sendResponse(await chrome.tabs.sendMessage(message.tabId, message.payload));
+        if (!Number.isInteger(message.tabId))
+          throw new Error("A valid tab is required.");
+        sendResponse(
+          await chrome.tabs.sendMessage(message.tabId, message.payload),
+        );
         break;
       case "INSPECTOR_GET_SELECTION":
-        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
-        sendResponse(await chrome.tabs.sendMessage(message.tabId, {
-          type: "INSPECTOR_GET_SELECTION"
-        }));
+        if (!Number.isInteger(message.tabId))
+          throw new Error("A valid tab is required.");
+        sendResponse(
+          await chrome.tabs.sendMessage(message.tabId, {
+            type: "INSPECTOR_GET_SELECTION",
+          }),
+        );
         break;
       case "INSPECTOR_SCAN":
-        if (!Number.isInteger(message.tabId)) throw new Error("A valid tab is required.");
-        sendResponse(await chrome.tabs.sendMessage(message.tabId, {
-          type: "INSPECTOR_SCAN",
-          payload: message.payload || {}
-        }));
+        if (!Number.isInteger(message.tabId))
+          throw new Error("A valid tab is required.");
+        sendResponse(
+          await chrome.tabs.sendMessage(message.tabId, {
+            type: "INSPECTOR_SCAN",
+            payload: message.payload || {},
+          }),
+        );
         break;
       case "APPLY_STYLESHEET":
-        sendResponse(await applyStylesheet(
-          message.hostname,
-          message.stylesheetId,
-          message.previousCss,
-          message.tabId
-        ));
+        sendResponse(
+          await applyStylesheet(
+            message.hostname,
+            message.stylesheetId,
+            message.previousCss,
+            message.tabId,
+          ),
+        );
         break;
       case "REMOVE_DOMAIN_CSS":
         sendResponse(await removeDomainCss(message.hostname, message.tabId));
@@ -443,7 +507,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       default:
         sendResponse({ error: "Unknown request." });
     }
-  })().catch((error) => sendResponse({ error: error.message || "The operation failed." }));
+  })().catch((error) =>
+    sendResponse({ error: error.message || "The operation failed." }),
+  );
 
   return true;
 });

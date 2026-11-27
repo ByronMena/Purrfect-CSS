@@ -11,10 +11,7 @@
     "downloads",
     "sidePanel"
   ],
-  "host_permissions": [
-    "http://*/*",
-    "https://*/*"
-  ],
+  "host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Purrfect CSS",
     "default_popup": "popup.html"

@@ -105,7 +105,9 @@ h1 {
   opacity: 0;
   pointer-events: none;
   transform: translate(-50%, -3px);
-  transition: opacity .12s ease, transform .12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
 }
 
 .quick-action:hover .button-tooltip,
@@ -263,7 +265,10 @@ textarea {
   border: 1px solid #8a8a8a;
   border-radius: 4px;
   color: #242424;
-  font: 13px/1.5 Consolas, "Courier New", monospace;
+  font:
+    13px/1.5 Consolas,
+    "Courier New",
+    monospace;
 }
 
 textarea:focus {
@@ -342,7 +347,10 @@ textarea:focus {
   visibility: hidden;
   pointer-events: none;
   transform: translate(3px, 50%);
-  transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s ease;
 }
 
 .file-controls #upload-button:hover .button-tooltip,
@@ -369,7 +377,10 @@ textarea:focus {
   visibility: hidden;
   pointer-events: none;
   transform: translate(3px, 50%);
-  transition: opacity .12s ease, transform .12s ease, visibility .12s ease;
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease,
+    visibility 0.12s ease;
 }
 
 .file-controls #export-button:hover .button-tooltip,

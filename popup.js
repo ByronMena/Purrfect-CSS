@@ -71,13 +71,17 @@ function validateCss(css) {
     sheet = new CSSStyleSheet();
     sheet.replaceSync(css);
   } catch {
-    throw new Error("The stylesheet could not be parsed. Check your CSS syntax.");
+    throw new Error(
+      "The stylesheet could not be parsed. Check your CSS syntax.",
+    );
   }
 
   function inspectRules(rules) {
     for (const rule of rules) {
       if (rule.type === 3) {
-        throw new Error("@import is not allowed. Add the styles directly instead.");
+        throw new Error(
+          "@import is not allowed. Add the styles directly instead.",
+        );
       }
       const serialized = rule.cssText || "";
       if (/(?:^|[^a-z-])url\s*\(/i.test(serialized)) {
@@ -101,7 +105,8 @@ async function sendBackgroundMessage(message) {
 }
 
 function uniqueId(prefix) {
-  if (typeof crypto?.randomUUID === "function") return `${prefix}-${crypto.randomUUID()}`;
+  if (typeof crypto?.randomUUID === "function")
+    return `${prefix}-${crypto.randomUUID()}`;
   return `${prefix}-${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
@@ -110,26 +115,31 @@ async function loadData() {
     STYLESHEETS_KEY,
     DOMAIN_RULES_KEY,
     DRAFT_KEY,
-    EDITOR_ID_KEY
+    EDITOR_ID_KEY,
   ]);
-  stylesheets = Array.isArray(data[STYLESHEETS_KEY]) ? data[STYLESHEETS_KEY] : [];
-  domainRules = data[DOMAIN_RULES_KEY] && typeof data[DOMAIN_RULES_KEY] === "object"
-    ? data[DOMAIN_RULES_KEY]
-    : {};
+  stylesheets = Array.isArray(data[STYLESHEETS_KEY])
+    ? data[STYLESHEETS_KEY]
+    : [];
+  domainRules =
+    data[DOMAIN_RULES_KEY] && typeof data[DOMAIN_RULES_KEY] === "object"
+      ? data[DOMAIN_RULES_KEY]
+      : {};
 
   if (!stylesheets.length) {
     const id = data[EDITOR_ID_KEY] || uniqueId("editor");
-    stylesheets = [{
-      id,
-      name: "Custom CSS",
-      source: "editor",
-      css: typeof data[DRAFT_KEY] === "string" ? data[DRAFT_KEY] : "",
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }];
+    stylesheets = [
+      {
+        id,
+        name: "Custom CSS",
+        source: "editor",
+        css: typeof data[DRAFT_KEY] === "string" ? data[DRAFT_KEY] : "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      },
+    ];
     await chrome.storage.local.set({
       [STYLESHEETS_KEY]: stylesheets,
-      [EDITOR_ID_KEY]: id
+      [EDITOR_ID_KEY]: id,
     });
   }
 }
@@ -198,7 +208,10 @@ function renderPicker() {
       selectButton.type = "button";
       selectButton.className = "picker-option";
       selectButton.setAttribute("role", "option");
-      selectButton.setAttribute("aria-selected", String(selectedStylesheetId === stylesheet.id));
+      selectButton.setAttribute(
+        "aria-selected",
+        String(selectedStylesheetId === stylesheet.id),
+      );
       selectButton.textContent = stylesheet.name;
       selectButton.addEventListener("click", () => {
         runPickerAction(() => applyLibraryStylesheet(stylesheet.id));
@@ -209,7 +222,10 @@ function renderPicker() {
       deleteButton.className = "picker-delete";
       deleteButton.textContent = "×";
       deleteButton.title = `Delete ${stylesheet.name}`;
-      deleteButton.setAttribute("aria-label", `Delete ${stylesheet.name} stylesheet`);
+      deleteButton.setAttribute(
+        "aria-label",
+        `Delete ${stylesheet.name} stylesheet`,
+      );
       deleteButton.addEventListener("click", (event) => {
         event.stopPropagation();
         runPickerAction(() => deleteStylesheet(stylesheet));
@@ -221,7 +237,11 @@ function renderPicker() {
 }
 
 async function applyLibraryStylesheet(stylesheetId, previousCss) {
-  if (!isValidTabId(activeTab?.id) || !isSupportedPage(activeTab.url) || !hostname) {
+  if (
+    !isValidTabId(activeTab?.id) ||
+    !isSupportedPage(activeTab.url) ||
+    !hostname
+  ) {
     throw new Error("Open a regular website before applying CSS.");
   }
   const stylesheet = stylesheets.find((item) => item.id === stylesheetId);
@@ -232,7 +252,11 @@ async function applyLibraryStylesheet(stylesheetId, previousCss) {
     hostname,
     tabId: activeTab?.id,
     stylesheetId,
-    previousCss: previousCss ?? stylesheets.find((item) => item.id === domainRules[hostname]?.stylesheetId)?.css
+    previousCss:
+      previousCss ??
+      stylesheets.find(
+        (item) => item.id === domainRules[hostname]?.stylesheetId,
+      )?.css,
   });
 
   selectedStylesheetId = stylesheetId;
@@ -240,11 +264,11 @@ async function applyLibraryStylesheet(stylesheetId, previousCss) {
   cssInput.value = stylesheet.css;
   await chrome.storage.local.set({
     [DRAFT_KEY]: stylesheet.css,
-    [EDITOR_ID_KEY]: stylesheet.id
+    [EDITOR_ID_KEY]: stylesheet.id,
   });
   domainRules[hostname] = {
     stylesheetId,
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
   updateDomainStatus();
   closePicker();
@@ -259,7 +283,11 @@ async function saveDraft() {
 }
 
 async function applyCss() {
-  if (!isValidTabId(activeTab?.id) || !isSupportedPage(activeTab.url) || !hostname) {
+  if (
+    !isValidTabId(activeTab?.id) ||
+    !isSupportedPage(activeTab.url) ||
+    !hostname
+  ) {
     throw new Error("Open a regular website before applying CSS.");
   }
 
@@ -278,17 +306,20 @@ async function applyCss() {
       source: "editor",
       css,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
     };
     stylesheets.push(stylesheet);
   } else {
     const previousCss = stylesheet.css;
-    stylesheet.name = stylesheet.source === "editor" ? (stylesheet.name || "Custom CSS") : stylesheet.name;
+    stylesheet.name =
+      stylesheet.source === "editor"
+        ? stylesheet.name || "Custom CSS"
+        : stylesheet.name;
     stylesheet.css = css;
     stylesheet.updatedAt = new Date().toISOString();
     await chrome.storage.local.set({
       [STYLESHEETS_KEY]: stylesheets,
-      [EDITOR_ID_KEY]: editorId
+      [EDITOR_ID_KEY]: editorId,
     });
     await applyLibraryStylesheet(editorId, previousCss);
     setStatus(`Custom CSS applied to all pages on ${hostname}.`);
@@ -297,7 +328,7 @@ async function applyCss() {
 
   await chrome.storage.local.set({
     [STYLESHEETS_KEY]: stylesheets,
-    [EDITOR_ID_KEY]: editorId
+    [EDITOR_ID_KEY]: editorId,
   });
   await applyLibraryStylesheet(editorId);
   setStatus(`Custom CSS applied to all pages on ${hostname}.`);
@@ -308,7 +339,7 @@ async function removeCss() {
   await sendBackgroundMessage({
     type: "REMOVE_DOMAIN_CSS",
     hostname,
-    tabId: activeTab?.id
+    tabId: activeTab?.id,
   });
   delete domainRules[hostname];
   updateDomainStatus();
@@ -332,14 +363,14 @@ async function uploadCss(file) {
     source: "uploaded",
     css,
     createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    updatedAt: new Date().toISOString(),
   };
   stylesheets.push(stylesheet);
 
   await chrome.storage.local.set({
     [STYLESHEETS_KEY]: stylesheets,
     [DRAFT_KEY]: css,
-    [EDITOR_ID_KEY]: stylesheet.id
+    [EDITOR_ID_KEY]: stylesheet.id,
   });
   cssInput.value = css;
   pickerName.textContent = stylesheet.name;
@@ -363,11 +394,11 @@ async function deleteStylesheet(stylesheet) {
 
   await sendBackgroundMessage({
     type: "DELETE_STYLESHEET",
-    stylesheetId: stylesheet.id
+    stylesheetId: stylesheet.id,
   });
   stylesheets = stylesheets.filter((item) => item.id !== stylesheet.id);
   await chrome.storage.local.set({
-    [STYLESHEETS_KEY]: stylesheets
+    [STYLESHEETS_KEY]: stylesheets,
   });
   for (const domain of usedOn) delete domainRules[domain];
 
@@ -401,10 +432,15 @@ function exportCss() {
 async function initialize() {
   try {
     if (typeof chrome.storage.local.setAccessLevel === "function") {
-      await chrome.storage.local.setAccessLevel({ accessLevel: "TRUSTED_CONTEXTS" });
+      await chrome.storage.local.setAccessLevel({
+        accessLevel: "TRUSTED_CONTEXTS",
+      });
     }
     await loadData();
-    [activeTab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    [activeTab] = await chrome.tabs.query({
+      active: true,
+      currentWindow: true,
+    });
 
     if (!isValidTabId(activeTab?.id) || !isSupportedPage(activeTab.url)) {
       pageName.textContent = "This page does not allow extensions.";
@@ -414,22 +450,28 @@ async function initialize() {
       return;
     }
 
-    hostname = new URL(activeTab.url).hostname.replace(/^www\./i, "").toLowerCase();
-    pageName.textContent = typeof activeTab.title === "string" && activeTab.title
-      ? activeTab.title
-      : hostname;
+    hostname = new URL(activeTab.url).hostname
+      .replace(/^www\./i, "")
+      .toLowerCase();
+    pageName.textContent =
+      typeof activeTab.title === "string" && activeTab.title
+        ? activeTab.title
+        : hostname;
 
     const rule = domainRules[hostname];
     selectedStylesheetId = rule?.stylesheetId || null;
-    const selected = stylesheets.find((item) => item.id === selectedStylesheetId);
+    const selected = stylesheets.find(
+      (item) => item.id === selectedStylesheetId,
+    );
     if (selected) {
       pickerName.textContent = selected.name;
       cssInput.value = selected.css;
     } else {
       const data = await chrome.storage.local.get(DRAFT_KEY);
-      cssInput.value = typeof data[DRAFT_KEY] === "string"
-        ? data[DRAFT_KEY]
-        : stylesheets[0]?.css || "";
+      cssInput.value =
+        typeof data[DRAFT_KEY] === "string"
+          ? data[DRAFT_KEY]
+          : stylesheets[0]?.css || "";
       selectedStylesheetId = stylesheets[0]?.id || null;
       pickerName.textContent = stylesheets[0]?.name || "No saved stylesheets";
     }
@@ -437,28 +479,41 @@ async function initialize() {
     updateDomainStatus();
   } catch (error) {
     pageName.textContent = "Could not access the current page.";
-    reportError("Could not initialize Purrfect CSS. Try reopening the popup.", error);
+    reportError(
+      "Could not initialize Purrfect CSS. Try reopening the popup.",
+      error,
+    );
     disablePageControls();
   }
 }
 
 cssInput.addEventListener("input", () => {
-  saveDraft().catch((error) => reportError("Could not save your draft.", error));
+  saveDraft().catch((error) =>
+    reportError("Could not save your draft.", error),
+  );
 });
 
 applyButton.addEventListener("click", () => {
-  applyCss().catch((error) => reportError(error.message || "Could not apply CSS.", error));
+  applyCss().catch((error) =>
+    reportError(error.message || "Could not apply CSS.", error),
+  );
 });
 
 removeButton.addEventListener("click", () => {
-  removeCss().catch((error) => reportError("Could not remove CSS from this domain.", error));
+  removeCss().catch((error) =>
+    reportError("Could not remove CSS from this domain.", error),
+  );
 });
 
 uploadButton.addEventListener("click", () => cssFileInput.click());
 cssFileInput.addEventListener("change", () => {
   uploadCss(cssFileInput.files?.[0])
-    .catch((error) => reportError(error.message || "Could not upload CSS.", error))
-    .finally(() => { cssFileInput.value = ""; });
+    .catch((error) =>
+      reportError(error.message || "Could not upload CSS.", error),
+    )
+    .finally(() => {
+      cssFileInput.value = "";
+    });
 });
 exportButton.addEventListener("click", exportCss);
 
@@ -478,9 +533,10 @@ document.addEventListener("keydown", (event) => {
 sidepanelButton.addEventListener("click", async () => {
   const sidePanelApi = chrome.sidePanel;
   const openSidePanel = sidePanelApi?.open;
-  const inspectorUrl = (tabId) => chrome.runtime.getURL(
-    `sidepanel.html${isValidTabId(tabId) ? `?tabId=${tabId}` : ""}`
-  );
+  const inspectorUrl = (tabId) =>
+    chrome.runtime.getURL(
+      `sidepanel.html${isValidTabId(tabId) ? `?tabId=${tabId}` : ""}`,
+    );
   try {
     if (typeof openSidePanel === "function" && isValidTabId(activeTab?.id)) {
       await openSidePanel.call(sidePanelApi, { tabId: activeTab.id });
@@ -488,7 +544,10 @@ sidepanelButton.addEventListener("click", async () => {
     }
     await chrome.tabs.create({ url: inspectorUrl(activeTab?.id) });
   } catch (error) {
-    console.warn("[Purrfect CSS] Could not open the side panel; opening the inspector tab.", error);
+    console.warn(
+      "[Purrfect CSS] Could not open the side panel; opening the inspector tab.",
+      error,
+    );
     try {
       await chrome.tabs.create({ url: inspectorUrl(activeTab?.id) });
     } catch (fallbackError) {
